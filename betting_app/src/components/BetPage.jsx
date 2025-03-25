@@ -6,16 +6,7 @@ export default function EnhancedBetPage() {
   const [showBuyingSection, setShowBuyingSection] = useState(false);
   const [buyingTimer, setBuyingTimer] = useState(10);
   const [betAmount, setBetAmount] = useState(500);
-  
-  const tabs = [
-    { id: "cricket", name: "Cricket", count: 24 },
-    { id: "football", name: "Football", count: 76 },
-    { id: "basketball", name: "Basketball", count: 34 },
-    { id: "tennis", name: "Tennis", count: 76 }
-  ];
-  
-  // Match winner odds
-  const matchWinnerOdds = {
+  const [matchWinnerOdds,setMatchWinnerOdds] = useState({
     "Delhi Capitals": {
       "Back_Odds": "1.85",
       "Lay_Odds": "1.86",
@@ -28,7 +19,17 @@ export default function EnhancedBetPage() {
       "Back_Rate": "1305.63",
       "Lay_Rate": "10.36"
     }
-  };
+  });
+
+  
+  const tabs = [
+    { id: "cricket", name: "Cricket", count: 24 },
+    { id: "football", name: "Football", count: 76 },
+    { id: "basketball", name: "Basketball", count: 34 },
+    { id: "tennis", name: "Tennis", count: 76 }
+  ];
+  
+  // Match winner odds
 
   // Toss data
   const tossData = {
@@ -84,6 +85,22 @@ export default function EnhancedBetPage() {
       if (timerId) clearTimeout(timerId);
     };
   }, [showBuyingSection, buyingTimer]);
+
+
+  useEffect(() => {
+    const socket = new WebSocket("ws://localhost:5000");
+
+    socket.onmessage = (event) => {
+      try {
+        const receivedData = JSON.parse(event.data);
+        console.log(receivedData.data);
+        
+        setMatchWinnerOdds(receivedData.data || {}); 
+      } catch (error) {
+        console.error("Invalid JSON data received:", error);
+      }
+    }
+  })
 
   // Calculate potential return
   const calculateReturn = () => {
