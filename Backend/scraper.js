@@ -39,11 +39,13 @@ class OddsScraper {
     async getOddsAndRates() {
         try {
             await this.page.waitForSelector('#oddsBody');
-            
+    
             return await this.page.evaluate(() => {
+                const oddsData = {};
+                const fancyData = {};
+    
+                // Extract main odds data
                 const rows = document.querySelectorAll('#oddsBody tr.back_lay_color');
-                let oddsData = {};
-                
                 rows.forEach(row => {
                     const runnerText = row.querySelector('.runner_text')?.innerText.trim() || "Unknown";
                     oddsData[runnerText] = {
@@ -53,13 +55,28 @@ class OddsScraper {
                         "Lay_Rate": row.querySelector("span[id*='layPrice']")?.innerText.trim() || "N/A"
                     };
                 });
-                return oddsData;
+    
+                // Extract fancy betting odds
+                const fancyRows = document.querySelectorAll('.session_content');
+                fancyRows.forEach(row => {
+                    const fancyName = row.querySelector('span')?.innerText.trim() || "Unknown";
+                    fancyData[fancyName] = {
+                        "Lay_Odds": row.querySelector('.fancy_lay button.lay-cell')?.innerText.trim() || "N/A",
+                        "Lay_Size": row.querySelector('.fancy_lay button.disab-btn')?.innerText.trim() || "N/A",
+                        "Back_Odds": row.querySelector('.fancy_back button.back-cell')?.innerText.trim() || "N/A",
+                        "Back_Size": row.querySelector('.fancy_back button.disab-btn')?.innerText.trim() || "N/A"
+                    };
+                });
+    
+                return { oddsData, fancyData };
             });
+    
         } catch (error) {
             console.error("Error fetching odds:", error);
             return {};
         }
     }
+    
 
     async monitorOdds(ws) {
         try {
