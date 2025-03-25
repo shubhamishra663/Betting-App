@@ -34,7 +34,7 @@ mongoose
   (async () => {
     await scraper.setup();
     await scraper.login("https://adaniexch.in/");
-    await scraper.navigateToEvent("https://adaniexch.in/EVENT/4/34109310");
+    await scraper.navigateToEvent("https://adaniexch.in/EVENT/4/34151830");
 })();
 
 // Signup Route
