@@ -61,7 +61,7 @@ class OddsScraper {
         }
     }
 
-    async monitorOdds() {
+    async monitorOdds(ws) {
         try {
             let previousData = await this.getOddsAndRates();
             console.log("Initial Data:", JSON.stringify(previousData, null, 4));
@@ -71,10 +71,13 @@ class OddsScraper {
                 let currentData = await this.getOddsAndRates();
                 
                 if (JSON.stringify(currentData) !== JSON.stringify(previousData)) {
+                    
+                    ws.send(JSON.stringify({ message: "Updated Odds & Rates", data: currentData }));
+                    console.log("sended data");
                     console.log("Updated Odds & Rates:", JSON.stringify(currentData, null, 4));
                     previousData = currentData;
                 }
-                await new Promise(r => setTimeout(r, 5000)); // Wait before rechecking
+                await new Promise(r => setTimeout(r, 500)); // Wait before rechecking
             }
         } catch (error) {
             console.error("Monitoring error:", error);
@@ -85,11 +88,13 @@ class OddsScraper {
     }
 }
 
-(async () => {
-    const scraper = new OddsScraper("c19601", "7777");
-    await scraper.setup();
-    await scraper.login("https://adaniexch.in/");
-    await scraper.navigateToEvent("https://adaniexch.in/EVENT/4/34108955");
-    console.log(await scraper.getOddsAndRates());
-    await scraper.monitorOdds();
-})();
+// (async () => {
+//     const scraper = new OddsScraper("c19601", "7777");
+//     await scraper.setup();
+//     await scraper.login("https://adaniexch.in/");
+//     await scraper.navigateToEvent("https://adaniexch.in/EVENT/4/34108955");
+//     console.log(await scraper.getOddsAndRates());
+//     await scraper.monitorOdds();
+// })();
+
+module.exports = { OddsScraper };

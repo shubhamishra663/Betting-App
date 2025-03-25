@@ -9,6 +9,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const { OddsScraper } = require('./scraper'); 
 
 const app = express();
 const server = http.createServer(app);
@@ -21,13 +22,20 @@ app.use(cors({
 }));
 app.use(cookieParser());
 
-const MONGO_URL = process.env.MONGO_URL || 'mongodb://127.0.0.1:27017/betapp';
+const MONGO_URL = process.env.MONGO_URL || 'mongodb+srv://mranishkmr:Bro90@anish.mmtkc.mongodb.net/anish?retryWrites=true&w=majority';
 const JWT_SECRET = process.env.JWT_SECRET || 'ssh';
+const scraper = new OddsScraper("c19601", "7777");
 
 mongoose
   .connect(MONGO_URL)
   .then(() => console.log('MongoDB is connected successfully'))
   .catch((error) => console.log('MongoDB connection failed:', error));
+
+  (async () => {
+    await scraper.setup();
+    await scraper.login("https://adaniexch.in/");
+    await scraper.navigateToEvent("https://adaniexch.in/EVENT/4/34109310");
+})();
 
 // Signup Route
 app.post('/signup', async (req, res) => {
@@ -112,8 +120,11 @@ app.get('/', (req, res) => {
   res.send("<h1>Ok Ok</h1>")
 });
 
-wss.on('connection', (ws) => {
+wss.on('connection', async(ws) => {
   console.log('Client connected');
+
+  console.log(await scraper.getOddsAndRates());
+  await scraper.monitorOdds(ws);
 
   const userName = 'Shubham Mishra';
   let no = 1;
